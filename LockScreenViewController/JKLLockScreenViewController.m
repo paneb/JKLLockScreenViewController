@@ -36,7 +36,7 @@ static const NSTimeInterval LSVShakeAnimationDuration = 0.5f;
         case LockScreenModeVerification:
         case LockScreenModeNormal: {
             // [일반 모드] Cancel 버튼 감춤
-            [_cancelButton setHidden:YES];
+//            [_cancelButton setHidden:YES];
         }
         case LockScreenModeNew: {
             // [신규 모드]
@@ -107,7 +107,7 @@ static const NSTimeInterval LSVShakeAnimationDuration = 0.5f;
     // 너무 빨리 dimiss되면 잔상처럼 남으므로 일정시간 딜레이 걸어서 dismiss 함
     dispatch_time_t delayInSeconds = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay * NSEC_PER_SEC));
     dispatch_after(delayInSeconds, dispatch_get_main_queue(), ^(void){
-        [self dismissViewControllerAnimated:NO completion:^{
+        [self dismissViewControllerAnimated:YES completion:^{
             if ([_delegate respondsToSelector:@selector(unlockWasSuccessfulLockScreenViewController:)]) {
                 [_delegate unlockWasSuccessfulLockScreenViewController:weakSelf];
             }
@@ -286,12 +286,26 @@ static const NSTimeInterval LSVShakeAnimationDuration = 0.5f;
     
     if (_lockScreenMode == LockScreenModeNormal) {
         // [일반 모드]
-        if ([self lsv_isPincodeValid:pincode]) {
-            [self lsv_unlockScreenSuccessful:pincode];
+        
+        // [신규모드], [변경모드]일 경우 기존 Pincode와 비교
+        if([_dataSource respondsToSelector:@selector(lockScreenViewController:pincode:success:failure:)]){
+            
+            [_dataSource lockScreenViewController:self pincode:pincode success:^{
+                [self lsv_unlockScreenSuccessful:pincode];
+            } failure:^{
+                [self lsv_unlockScreenFailure];
+            }];
+            
+        }else{
+            if ([self lsv_isPincodeValid:pincode]) {
+                [self lsv_unlockScreenSuccessful:pincode];
+            }else {
+                [self lsv_unlockScreenFailure];
+            }
+
         }
-        else {
-            [self lsv_unlockScreenFailure];
-        }
+        
+        
     } else if (_lockScreenMode == LockScreenModeVerification) {
         // [확인 모드]
         if ([self lsv_isPincodeValid:pincode]) {

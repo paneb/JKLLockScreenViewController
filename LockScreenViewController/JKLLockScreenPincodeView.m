@@ -4,7 +4,7 @@
 
 #import "JKLLockScreenPincodeView.h"
 
-static const NSUInteger LSPMaxPincodeLength = 4;
+static const NSUInteger LSPMaxPincodeLength = 5;
 
 @interface JKLLockScreenPincodeView() {
     NSUInteger _wasCompleted;
